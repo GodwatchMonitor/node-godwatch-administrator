@@ -47,11 +47,16 @@ def retrieve_data():
                 ls_addresses['menu'].add_command(label=rrd['name'], command=tk._setit(lsvar_current_address, rrd['name']));
 
 def load_settings():
-    settings_file = open('settings.txt', 'r+');
-    settings = settings_file.readlines();
-    str_server.set(settings[0][:-1]);
-    str_username.set(settings[1][:-1]);
-    str_password.set(settings[2][:-1]);
+    settings_file = open('settings.txt', 'w+');
+    
+    try:
+        settings = settings_file.readlines();
+        str_server.set(settings[0][:-1]);
+        str_username.set(settings[1][:-1]);
+        str_password.set(settings[2][:-1]);
+    except:
+        print("Invalid, missing, or corrupted settings file, ignoring...");
+
     settings_file.close();
 
 def save_settings():
