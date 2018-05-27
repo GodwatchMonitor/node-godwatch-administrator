@@ -12,8 +12,14 @@ str_server = StringVar();
 str_username = StringVar();
 str_password = StringVar();
 
+str_rname = StringVar();
+str_raddress = StringVar();
+
 lsvar_current_address = StringVar();
 lsvar_current_client = StringVar();
+
+db_addresses = {};
+db_clients = {};
 
 # METHODS
 def retrieve_data():
@@ -33,7 +39,9 @@ def retrieve_data():
 
             if rc.status_code == 200:
                 rcd = json.loads(rr.text);
-                ls_clients['menu'].add_command(label=rcd['name'], command=tk._setit(lsvar_current_client, rcd['name']));
+                if not rcd is None:
+                    ls_clients['menu'].add_command(label=rcd['name'], command=tk._setit(lsvar_current_client, rcd['name']));
+                    db_clients[rcd['name']] = rcd;
 
         # PARSE RECIPIENTS
         lsvar_current_address.set('');
@@ -44,11 +52,16 @@ def retrieve_data():
 
             if rr.status_code == 200:
                 rrd = json.loads(rr.text);
-                ls_addresses['menu'].add_command(label=rrd['name'], command=tk._setit(lsvar_current_address, rrd['name']));
+                if not rrd is None:
+                    ls_addresses['menu'].add_command(label=rrd['name'], command=tk._setit(lsvar_current_address, rrd['name']));
+                    db_addresses[rrd['name']] = rrd;
 
 def load_settings():
-    settings_file = open('settings.txt', 'w+');
-    
+    try:
+        settings_file = open('settings.txt', 'r+');
+    except IOError:
+        settings_file = open('settings.txt', 'w+');
+
     try:
         settings = settings_file.readlines();
         str_server.set(settings[0][:-1]);
@@ -58,6 +71,13 @@ def load_settings():
         print("Invalid, missing, or corrupted settings file, ignoring...");
 
     settings_file.close();
+
+def dropdown_change_recipient(*args):
+    name = lsvar_current_address.get();
+    if name != "" and name != "{'None'}":
+        data = db_addresses[name];
+        str_rname.set(data['name']);
+        str_raddress.set(data['address']);
 
 def save_settings():
     settings_file = open('settings.txt', 'w+');
@@ -106,10 +126,23 @@ client_page_f1.grid(row=1,column=1);
 # RECIPIENT PAGE
 address_page = Frame(mw, padx=10, pady=10);
 
-address_page_f1 = Frame(address_page);
+address_page_f1 = Frame(address_page, padx=10, pady=10);
 ls_addresses = OptionMenu(address_page_f1, lsvar_current_address, {"None"});
+lsvar_current_address.trace('w', dropdown_change_recipient);
 ls_addresses.grid(row=1,column=1);
-address_page_f1.grid(row=1,column=1);
+address_page_f1.grid(row=1,column=1,sticky=W);
+
+address_page_f2 = Frame(address_page);
+label_rname = Label(address_page_f2, text="Name");
+input_rname = Entry(address_page_f2, textvariable=str_rname);
+label_rname.grid(row=1,column=1);
+input_rname.grid(row=1,column=2);
+
+label_raddress = Label(address_page_f2, text="Address");
+input_raddress = Entry(address_page_f2, textvariable=str_raddress);
+label_raddress.grid(row=2,column=1);
+input_raddress.grid(row=2,column=2);
+address_page_f2.grid(row=2,column=1);
 
 mw.add(config_page, text="Config");
 mw.add(client_page, text="Clients");
