@@ -1,3 +1,0 @@
-blackhawk:7001
-sysadmin
-blip
