@@ -4,16 +4,19 @@ from tkinter import ttk
 import requests, json
 
 root = Tk();
-root.title("node-godwatch server")
+root.title("node-Godwatch Administrator")
 root.geometry("300x300");
 root.resizable(0, 0);
 
 str_server = StringVar();
+str_server.set("");
 str_username = StringVar();
 str_password = StringVar();
 
 str_rname = StringVar();
+str_rname.set("");
 str_raddress = StringVar();
+str_raddress.set("");
 
 lsvar_current_address = StringVar();
 lsvar_current_client = StringVar();
@@ -24,37 +27,39 @@ db_clients = {};
 # METHODS
 def retrieve_data():
 
-    r = requests.get('http://' + str_server.get() + '/config', auth=(str_username.get(), str_password.get()));
+    if str_server.get() != "":
 
-    if r.status_code == 200:
+        r = requests.get('http://' + str_server.get() + '/config', auth=(str_username.get(), str_password.get()));
 
-        data = json.loads(r.text)[0];
+        if r.status_code == 200:
 
-        # PARSE CLIENTS
-        lsvar_current_client.set('');
-        ls_clients['menu'].delete(0, 'end');
+            data = json.loads(r.text)[0];
 
-        for x in data['clients']:
-            rc = requests.get('http://' + str_server.get() + '/clients/' + str(x), auth=(str_username.get(), str_password.get()));
+            # PARSE CLIENTS
+            lsvar_current_client.set('');
+            ls_clients['menu'].delete(0, 'end');
 
-            if rc.status_code == 200:
-                rcd = json.loads(rr.text);
-                if not rcd is None:
-                    ls_clients['menu'].add_command(label=rcd['name'], command=tk._setit(lsvar_current_client, rcd['name']));
-                    db_clients[rcd['name']] = rcd;
+            for x in data['clients']:
+                rc = requests.get('http://' + str_server.get() + '/clients/' + str(x), auth=(str_username.get(), str_password.get()));
 
-        # PARSE RECIPIENTS
-        lsvar_current_address.set('');
-        ls_addresses['menu'].delete(0, 'end');
+                if rc.status_code == 200:
+                    rcd = json.loads(rr.text);
+                    if not rcd is None:
+                        ls_clients['menu'].add_command(label=rcd['name'], command=tk._setit(lsvar_current_client, rcd['name']));
+                        db_clients[rcd['name']] = rcd;
 
-        for x in data['recipients']:
-            rr = requests.get('http://' + str_server.get() + '/recipients/' + str(x), auth=(str_username.get(), str_password.get()));
+            # PARSE RECIPIENTS
+            lsvar_current_address.set('');
+            ls_addresses['menu'].delete(0, 'end');
 
-            if rr.status_code == 200:
-                rrd = json.loads(rr.text);
-                if not rrd is None:
-                    ls_addresses['menu'].add_command(label=rrd['name'], command=tk._setit(lsvar_current_address, rrd['name']));
-                    db_addresses[rrd['name']] = rrd;
+            for x in data['recipients']:
+                rr = requests.get('http://' + str_server.get() + '/recipients/' + str(x), auth=(str_username.get(), str_password.get()));
+
+                if rr.status_code == 200:
+                    rrd = json.loads(rr.text);
+                    if not rrd is None:
+                        ls_addresses['menu'].add_command(label=rrd['name'], command=tk._setit(lsvar_current_address, rrd['name']));
+                        db_addresses[rrd['name']] = rrd;
 
 def load_settings():
     try:
@@ -84,32 +89,51 @@ def save_settings():
     settings_file.write(str_server.get() + '\n' + str_username.get() + '\n' + str_password.get() + '\n');
     settings_file.close();
 
+def check_empty_address():
+    if str_rname.get() != "":
+        if str_raddress.get() != "":
+            return True;
+        else:
+            return False:
+    else:
+        return False:
+
 def save_address():
-    name = lsvar_current_address.get();
-    if name != "" and name != "{'None'}":
-        odata = db_addresses[name];
+    if check_empty_address():
+        name = lsvar_current_address.get();
+        if name != "" and name != "{'None'}":
+            odata = db_addresses[name];
+            data = {}
+            data['name'] = str_rname.get();
+            data['address'] = str_raddress.get();
+            data['enabled'] = True;
+            r = requests.put('http://' + str_server.get() + '/recipients/' + str(odata['rid']), auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'address': data['address'], 'enabled': data['enabled'] });
+            retrieve_data();
+        else:
+            save_address_as_new();
+
+def save_address_as_new():
+    if check_empty_address():
         data = {}
         data['name'] = str_rname.get();
         data['address'] = str_raddress.get();
         data['enabled'] = True;
-        r = requests.put('http://' + str_server.get() + '/recipients/' + str(odata['rid']), auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'address': data['address'], 'enabled': data['enabled'] });
-    else:
-        save_address_as_new();
+        r = requests.post('http://' + str_server.get() + '/recipients', auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'address': data['address'], 'enabled': data['enabled'] });
+        retrieve_data();
 
-def save_address_as_new():
+def delete_address():
     name = lsvar_current_address.get();
     odata = db_addresses[name];
-    data = {}
-    data['name'] = str_rname.get();
-    data['address'] = str_raddress.get();
-    data['enabled'] = True;
-    r = requests.post('http://' + str_server.get() + '/recipients', auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'address': data['address'], 'enabled': data['enabled'] });
+    r = requests.delete('http://' + str_server.get() + '/recipients/' + str(odata['rid']), auth=(str_username.get(), str_password.get()));
+    str_rname.set("");
+    str_raddress.set("");
+    lsvar_current_address.set("");
+    retrieve_data();
 
 # GUI
-mw = ttk.Notebook(root, width=300, height=300);
 
 # CONFIG PAGE
-config_page = Frame(mw, padx=10, pady=10);
+config_page = Frame(root, width=300, height=130, pady=20);
 
 config_page_f1 = Frame(config_page);
 label_server = Label(config_page_f1, text="Server");
@@ -127,14 +151,16 @@ label_password = Label(config_page_f1, text="Password");
 input_password = Entry(config_page_f1, textvariable=str_password, show="*");
 label_password.grid(row=3,column=1);
 input_password.grid(row=3,column=2);
-config_page_f1.grid(row=1,column=1);
+config_page_f1.grid(row=1,column=1,sticky=W);
 
-config_page_f2 = Frame(config_page);
-button_saveSettings = Button(config_page_f2, text="Save", command=save_settings);
+config_page_f2 = Frame(config_page, padx=20);
+button_saveSettings = Button(config_page_f2, text="Save Settings", command=save_settings);
 button_saveSettings.grid(row=1,column=1);
-button_retrieveData = Button(config_page_f2, text="Retrieve", command=retrieve_data);
-button_retrieveData.grid(row=1,column=2);
-config_page_f2.grid(row=2,column=1)
+button_retrieveData = Button(config_page_f2, text="Retrieve Data", command=retrieve_data);
+button_retrieveData.grid(row=2,column=1);
+config_page_f2.grid(row=1,column=2,sticky=E);
+
+mw = ttk.Notebook(root, width=300, height=170);
 
 # CLIENT PAGE
 client_page = Frame(mw, padx=10, pady=10);
@@ -166,18 +192,22 @@ input_raddress.grid(row=2,column=2);
 address_page_f2.grid(row=2,column=1,sticky=W);
 
 address_page_f3 = Frame(address_page, padx=4, pady=10);
-button_saveAddress = Button(address_page_f3, text="Save", command=save_address);
+button_saveAddress = Button(address_page_f3, text="Update", command=save_address);
 button_saveAddress.grid(row=1,column=1);
 button_newAddress = Button(address_page_f3, text="Save As New", command=save_address_as_new);
 button_newAddress.grid(row=1,column=2);
+button_deleteAddress = Button(address_page_f3, text="Delete", command=delete_address);
+button_deleteAddress.grid(row=1,column=3);
 address_page_f3.grid(row=3,column=1,sticky=W);
 
-mw.add(config_page, text="Config");
+#mw.add(config_page, text="Config");
 mw.add(client_page, text="Clients");
 mw.add(address_page, text="Recipients");
 
 mw.grid(row=1,column=1);
+config_page.grid(row=2,column=1,sticky=W);
 
 load_settings();
+retrieve_data();
 
 root.mainloop();
