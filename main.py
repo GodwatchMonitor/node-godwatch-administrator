@@ -17,6 +17,8 @@ str_rname = StringVar();
 str_rname.set("");
 str_raddress = StringVar();
 str_raddress.set("");
+int_renabled = IntVar();
+int_renabled.set(1);
 
 lsvar_current_address = StringVar();
 lsvar_current_client = StringVar();
@@ -85,6 +87,12 @@ def dropdown_change_recipient(*args):
         data = db_addresses[name];
         str_rname.set(data['name']);
         str_raddress.set(data['address']);
+        print(data['rid'])
+        print(data['enabled']);
+        if data['enabled']:
+            int_renabled.set(1);
+        else:
+            int_renabled.set(0);
 
 def save_settings():
     settings_file = open('settings.txt', 'w+');
@@ -108,7 +116,10 @@ def save_address():
             data = {}
             data['name'] = str_rname.get();
             data['address'] = str_raddress.get();
-            data['enabled'] = True;
+            if int_renabled.get() == 1:
+                data['enabled'] = True;
+            else:
+                data['enabled'] = False;
             r = requests.put('http://' + str_server.get() + '/recipients/' + str(odata['rid']), auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'address': data['address'], 'enabled': data['enabled'] });
             retrieve_data();
         else:
@@ -119,7 +130,10 @@ def save_address_as_new():
         data = {}
         data['name'] = str_rname.get();
         data['address'] = str_raddress.get();
-        data['enabled'] = True;
+        if int_renabled.get() == 1:
+            data['enabled'] = True;
+        else:
+            data['enabled'] = False;
         r = requests.post('http://' + str_server.get() + '/recipients', auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'address': data['address'], 'enabled': data['enabled'] });
         retrieve_data();
 
@@ -182,6 +196,7 @@ ls_addresses.grid(row=1,column=2);
 address_page_f1.grid(row=1,column=1,sticky=W);
 
 address_page_f2 = Frame(address_page, padx=4, pady=10);
+
 label_rname = Label(address_page_f2, text="Name");
 input_rname = Entry(address_page_f2, textvariable=str_rname);
 label_rname.grid(row=1,column=1);
@@ -191,9 +206,15 @@ label_raddress = Label(address_page_f2, text="Address");
 input_raddress = Entry(address_page_f2, textvariable=str_raddress);
 label_raddress.grid(row=2,column=1);
 input_raddress.grid(row=2,column=2);
+
+label_renabled = Label(address_page_f2, text="Enabled");
+input_renabled = Checkbutton(address_page_f2, variable=int_renabled);
+label_renabled.grid(row=3,column=1);
+input_renabled.grid(row=3,column=2,sticky=W);
+
 address_page_f2.grid(row=2,column=1,sticky=W);
 
-address_page_f3 = Frame(address_page, padx=4, pady=10);
+address_page_f3 = Frame(address_page, padx=4, pady=2);
 button_saveAddress = Button(address_page_f3, text="Update", command=save_address);
 button_saveAddress.grid(row=1,column=1);
 button_newAddress = Button(address_page_f3, text="Save As New", command=save_address_as_new);
