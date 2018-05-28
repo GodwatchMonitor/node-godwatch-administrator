@@ -24,6 +24,8 @@ lsvar_current_client = StringVar();
 db_addresses = {};
 db_clients = {};
 
+makemodal = (len(sys.argv) > 1);
+
 # METHODS
 def retrieve_data():
 
@@ -94,9 +96,9 @@ def check_empty_address():
         if str_raddress.get() != "":
             return True;
         else:
-            return False:
+            return False;
     else:
-        return False:
+        return False;
 
 def save_address():
     if check_empty_address():
@@ -133,7 +135,7 @@ def delete_address():
 # GUI
 
 # CONFIG PAGE
-config_page = Frame(root, width=300, height=130, pady=20);
+config_page = Frame(root, width=300, height=110, pady=10);
 
 config_page_f1 = Frame(config_page);
 label_server = Label(config_page_f1, text="Server");
