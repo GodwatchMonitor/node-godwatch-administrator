@@ -20,6 +20,19 @@ str_raddress.set("");
 int_renabled = IntVar();
 int_renabled.set(1);
 
+str_cname = StringVar();
+str_cname.set("");
+str_chash = StringVar();
+str_chash.set("");
+str_cinterval = StringVar();
+str_cinterval.set("");
+str_cipaddr = StringVar();
+str_cipaddr.set("");
+int_cenabled = IntVar();
+int_cenabled.set(1);
+str_cdatereported = StringVar();
+str_cdatereported.set("");
+
 lsvar_current_address = StringVar();
 lsvar_current_client = StringVar();
 
@@ -47,7 +60,7 @@ def retrieve_data():
                 rc = requests.get('http://' + str_server.get() + '/clients/' + str(x), auth=(str_username.get(), str_password.get()));
 
                 if rc.status_code == 200:
-                    rcd = json.loads(rr.text);
+                    rcd = json.loads(rc.text);
                     if not rcd is None:
                         ls_clients['menu'].add_command(label=rcd['name'], command=tk._setit(lsvar_current_client, rcd['name']));
                         db_clients[rcd['name']] = rcd;
@@ -87,12 +100,24 @@ def dropdown_change_recipient(*args):
         data = db_addresses[name];
         str_rname.set(data['name']);
         str_raddress.set(data['address']);
-        print(data['rid'])
-        print(data['enabled']);
         if data['enabled']:
             int_renabled.set(1);
         else:
             int_renabled.set(0);
+
+def dropdown_change_client(*args):
+    name = lsvar_current_client.get();
+    if name != "" and name != "{'None'}":
+        data = db_clients[name];
+        str_cname.set(data['name']);
+        str_cipaddr.set(data['ipaddr']);
+        str_cinterval.set(data['interval']);
+        str_chash.set(data['hash']);
+        str_cdatereported.set(data['datereported']);
+        if data['enabled']:
+            int_cenabled.set(1);
+        else:
+            int_cenabled.set(0);
 
 def save_settings():
     settings_file = open('settings.txt', 'w+');
@@ -179,12 +204,24 @@ config_page_f2.grid(row=1,column=2,sticky=E);
 mw = ttk.Notebook(root, width=300, height=170);
 
 # CLIENT PAGE
-client_page = Frame(mw, padx=10, pady=10);
+client_page = Frame(mw, padx=2, pady=2);
 
-client_page_f1 = Frame(client_page);
+client_page_f1 = Frame(client_page, padx=4, pady=10);
 ls_clients = OptionMenu(client_page_f1, lsvar_current_client, {"None"});
+lsvar_current_client.trace('w', dropdown_change_client);
+label_cipaddr = Label(client_page_f1, textvariable=str_cipaddr);
 ls_clients.grid(row=1,column=1);
-client_page_f1.grid(row=1,column=1);
+label_cipaddr.grid(row=1,column=2);
+client_page_f1.grid(row=1,column=1,sticky=W);
+
+client_page_f2 = Frame(client_page, padx=4, pady=10);
+
+label_cname = Label(client_page_f2, text="Name");
+input_cname = Entry(client_page_f2, textvariable=str_cname);
+label_cname.grid(row=1,column=1);
+input_cname.grid(row=1,column=2);
+
+client_page_f2.grid(row=2,column=1,sticky=W);
 
 # RECIPIENT PAGE
 address_page = Frame(mw, padx=2, pady=2);
