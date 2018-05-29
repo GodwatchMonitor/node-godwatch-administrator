@@ -214,21 +214,6 @@ def save_client():
                 data['enabled'] = False;
             r = requests.put('http://' + str_server.get() + '/clients/' + str(odata['cid']), auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'interval': data['interval'], 'hash': data['hash'], 'enabled': data['enabled'] });
             retrieve_data();
-        else:
-            save_client_as_new();
-
-def save_client_as_new():
-    if check_empty_client():
-        data = {}
-        data['name'] = str_cname.get();
-        data['interval'] = str_cinterval.get();
-        data['hash'] = str_chash.get();
-        if int_cenabled.get() == 1:
-            data['enabled'] = True;
-        else:
-            data['enabled'] = False;
-        r = requests.post('http://' + str_server.get() + '/clients', auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'interval': data['interval'], 'hash': data['hash'], 'enabled': data['enabled'] });
-        retrieve_data();
 
 def delete_client():
     name = lsvar_current_client.get();
@@ -245,21 +230,23 @@ def delete_client():
 config_page = Frame(root, width=300, height=110, pady=10);
 
 config_page_f1 = Frame(config_page);
-label_server = Label(config_page_f1, text="Server");
+
+label_server = Label(config_page_f1, text="Server: ");
 input_server = Entry(config_page_f1, textvariable=str_server);
 input_server.insert(0, "server:port");
-label_server.grid(row=1,column=1);
-input_server.grid(row=1,column=2);
+label_server.grid(row=1,column=1,sticky=E);
+input_server.grid(row=1,column=2,sticky=W);
 
-label_username = Label(config_page_f1, text="Username");
+label_username = Label(config_page_f1, text="Username: ");
 input_username = Entry(config_page_f1, textvariable=str_username);
-label_username.grid(row=2,column=1);
-input_username.grid(row=2,column=2);
+label_username.grid(row=2,column=1,sticky=E);
+input_username.grid(row=2,column=2,sticky=W);
 
-label_password = Label(config_page_f1, text="Password");
+label_password = Label(config_page_f1, text="Password: ");
 input_password = Entry(config_page_f1, textvariable=str_password, show="*");
-label_password.grid(row=3,column=1);
-input_password.grid(row=3,column=2);
+label_password.grid(row=3,column=1,sticky=E);
+input_password.grid(row=3,column=2,sticky=W);
+
 config_page_f1.grid(row=1,column=1,sticky=W);
 
 config_page_f2 = Frame(config_page, padx=20);
@@ -284,20 +271,20 @@ client_page_f1.grid(row=1,column=1,sticky=W);
 
 client_page_f2 = Frame(client_page, padx=4, pady=10);
 
-label_cname = Label(client_page_f2, text="Name");
-input_cname = Entry(client_page_f2, textvariable=str_cname);
-label_cname.grid(row=1,column=1);
-input_cname.grid(row=1,column=2);
+label_cname = Label(client_page_f2, text="Name: ");
+input_cname = Label(client_page_f2, textvariable=str_cname);
+label_cname.grid(row=1,column=1,sticky=E);
+input_cname.grid(row=1,column=2,sticky=W);
 
-label_chash = Label(client_page_f2, text="Hash");
-input_chash = Entry(client_page_f2, textvariable=str_chash);
-label_chash.grid(row=2,column=1);
-input_chash.grid(row=2,column=2);
+label_chash = Label(client_page_f2, text="Hash: ");
+input_chash = Label(client_page_f2, textvariable=str_chash);
+label_chash.grid(row=2,column=1,sticky=E);
+input_chash.grid(row=2,column=2,sticky=W);
 
-label_cinterval = Label(client_page_f2, text="Interval");
+label_cinterval = Label(client_page_f2, text="Interval: ");
 input_cinterval = Entry(client_page_f2, textvariable=str_cinterval);
-label_cinterval.grid(row=3,column=1);
-input_cinterval.grid(row=3,column=2);
+label_cinterval.grid(row=3,column=1,sticky=E);
+input_cinterval.grid(row=3,column=2,sticky=W);
 
 #label_cdatereported = Label(client_page_f2, textvariable=str_cdatereported);
 #label_cdatereported.grid(row=4,column=1);
@@ -308,10 +295,8 @@ client_page_f3 = Frame(client_page, padx=4, pady=6);
 
 button_saveClient = Button(client_page_f3, text="Update", command=save_client);
 button_saveClient.grid(row=1,column=1);
-button_newClient = Button(client_page_f3, text="Save As New", command=save_client_as_new);
-button_newClient.grid(row=1,column=2);
 button_deleteClient = Button(client_page_f3, text="Delete", command=delete_client);
-button_deleteClient.grid(row=1,column=3);
+button_deleteClient.grid(row=1,column=2);
 
 client_page_f3.grid(row=3,column=1,sticky=W);
 
@@ -326,19 +311,19 @@ address_page_f1.grid(row=1,column=1,sticky=W);
 
 address_page_f2 = Frame(address_page, padx=4, pady=10);
 
-label_rname = Label(address_page_f2, text="Name");
+label_rname = Label(address_page_f2, text="Name: ");
 input_rname = Entry(address_page_f2, textvariable=str_rname);
-label_rname.grid(row=1,column=1);
-input_rname.grid(row=1,column=2);
+label_rname.grid(row=1,column=1,sticky=E);
+input_rname.grid(row=1,column=2,sticky=W);
 
-label_raddress = Label(address_page_f2, text="Address");
+label_raddress = Label(address_page_f2, text="Address: ");
 input_raddress = Entry(address_page_f2, textvariable=str_raddress);
-label_raddress.grid(row=2,column=1);
-input_raddress.grid(row=2,column=2);
+label_raddress.grid(row=2,column=1,sticky=E);
+input_raddress.grid(row=2,column=2,sticky=W);
 
-label_renabled = Label(address_page_f2, text="Enabled");
+label_renabled = Label(address_page_f2, text="Enabled: ");
 input_renabled = Checkbutton(address_page_f2, variable=int_renabled);
-label_renabled.grid(row=3,column=1);
+label_renabled.grid(row=3,column=1,sticky=E);
 input_renabled.grid(row=3,column=2,sticky=W);
 
 address_page_f2.grid(row=2,column=1,sticky=W);
