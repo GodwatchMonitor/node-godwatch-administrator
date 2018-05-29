@@ -42,7 +42,21 @@ db_clients = {};
 makemodal = (len(sys.argv) > 1);
 
 # METHODS
+def reset_stringvars():
+    str_rname.set("");
+    str_raddress.set("");
+    int_renabled.set(1);
+
+    str_cname.set("");
+    str_chash.set("");
+    str_cinterval.set("");
+    str_cipaddr.set("");
+    int_cenabled.set(1);
+    str_cdatereported.set("");
+
 def retrieve_data():
+
+    reset_stringvars();
 
     if str_server.get() != "":
 
@@ -64,6 +78,7 @@ def retrieve_data():
                     if not rcd is None:
                         ls_clients['menu'].add_command(label=rcd['name'], command=tk._setit(lsvar_current_client, rcd['name']));
                         db_clients[rcd['name']] = rcd;
+                        lsvar_current_client.set(rcd['name']);
 
             # PARSE RECIPIENTS
             lsvar_current_address.set('');
@@ -77,6 +92,7 @@ def retrieve_data():
                     if not rrd is None:
                         ls_addresses['menu'].add_command(label=rrd['name'], command=tk._setit(lsvar_current_address, rrd['name']));
                         db_addresses[rrd['name']] = rrd;
+                        lsvar_current_address.set(rrd['name']);
 
 def load_settings():
     try:
@@ -114,10 +130,10 @@ def dropdown_change_client(*args):
         str_cinterval.set(data['interval']);
         str_chash.set(data['hash']);
         str_cdatereported.set(data['datereported']);
-        if data['enabled']:
-            int_cenabled.set(1);
-        else:
-            int_cenabled.set(0);
+        #if data['enabled']:
+        #    int_cenabled.set(1);
+        #else:
+        #    int_cenabled.set(0);
 
 def save_settings():
     settings_file = open('settings.txt', 'w+');
@@ -171,6 +187,58 @@ def delete_address():
     lsvar_current_address.set("");
     retrieve_data();
 
+def check_empty_client():
+    if str_cname.get() != "":
+        if str_chash.get() != "":
+            if str_cinterval.get() != "":
+                return True;
+            else:
+                return False;
+        else:
+            return False;
+    else:
+        return False;
+
+def save_client():
+    if check_empty_client():
+        name = lsvar_current_client.get();
+        if name != "" and name != "{'None'}":
+            odata = db_clients[name];
+            data = {}
+            data['name'] = str_cname.get();
+            data['interval'] = str_cinterval.get();
+            data['hash'] = str_chash.get();
+            if int_cenabled.get() == 1:
+                data['enabled'] = True;
+            else:
+                data['enabled'] = False;
+            r = requests.put('http://' + str_server.get() + '/clients/' + str(odata['cid']), auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'interval': data['interval'], 'hash': data['hash'], 'enabled': data['enabled'] });
+            retrieve_data();
+        else:
+            save_client_as_new();
+
+def save_client_as_new():
+    if check_empty_client():
+        data = {}
+        data['name'] = str_cname.get();
+        data['interval'] = str_cinterval.get();
+        data['hash'] = str_chash.get();
+        if int_cenabled.get() == 1:
+            data['enabled'] = True;
+        else:
+            data['enabled'] = False;
+        r = requests.post('http://' + str_server.get() + '/clients', auth=(str_username.get(), str_password.get()), json={ 'name': data['name'], 'interval': data['interval'], 'hash': data['hash'], 'enabled': data['enabled'] });
+        retrieve_data();
+
+def delete_client():
+    name = lsvar_current_client.get();
+    odata = db_clients[name];
+    r = requests.delete('http://' + str_server.get() + '/clients/' + str(odata['cid']), auth=(str_username.get(), str_password.get()));
+    str_cname.set("");
+    str_cipaddr.set("");
+    lsvar_current_client.set("");
+    retrieve_data();
+
 # GUI
 
 # CONFIG PAGE
@@ -221,7 +289,31 @@ input_cname = Entry(client_page_f2, textvariable=str_cname);
 label_cname.grid(row=1,column=1);
 input_cname.grid(row=1,column=2);
 
+label_chash = Label(client_page_f2, text="Hash");
+input_chash = Entry(client_page_f2, textvariable=str_chash);
+label_chash.grid(row=2,column=1);
+input_chash.grid(row=2,column=2);
+
+label_cinterval = Label(client_page_f2, text="Interval");
+input_cinterval = Entry(client_page_f2, textvariable=str_cinterval);
+label_cinterval.grid(row=3,column=1);
+input_cinterval.grid(row=3,column=2);
+
+#label_cdatereported = Label(client_page_f2, textvariable=str_cdatereported);
+#label_cdatereported.grid(row=4,column=1);
+
 client_page_f2.grid(row=2,column=1,sticky=W);
+
+client_page_f3 = Frame(client_page, padx=4, pady=6);
+
+button_saveClient = Button(client_page_f3, text="Update", command=save_client);
+button_saveClient.grid(row=1,column=1);
+button_newClient = Button(client_page_f3, text="Save As New", command=save_client_as_new);
+button_newClient.grid(row=1,column=2);
+button_deleteClient = Button(client_page_f3, text="Delete", command=delete_client);
+button_deleteClient.grid(row=1,column=3);
+
+client_page_f3.grid(row=3,column=1,sticky=W);
 
 # RECIPIENT PAGE
 address_page = Frame(mw, padx=2, pady=2);
