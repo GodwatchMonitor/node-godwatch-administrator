@@ -33,6 +33,19 @@ int_cenabled.set(1);
 str_cdatereported = StringVar();
 str_cdatereported.set("");
 
+str_ehost = StringVar();
+str_ehost.set("");
+str_eport = StringVar();
+str_eport.set("");
+str_euser = StringVar();
+str_euser.set("");
+str_epass = StringVar();
+str_epass.set("");
+int_esecure = IntVar();
+int_esecure.set(1);
+int_ereject = IntVar();
+int_ereject.set(1);
+
 lsvar_current_address = StringVar();
 lsvar_current_client = StringVar();
 
@@ -66,13 +79,26 @@ def retrieve_data():
 
             data = json.loads(r.text)[0];
 
+            str_ehost.set(data['mailhost']);
+            str_eport.set(data['mailport']);
+            if data['securemail']:
+                int_esecure.set(1);
+            else:
+                int_esecure.set(0);
+            str_euser.set(data['mailuser']);
+            str_epass.set(data['mailpass']);
+            if data['mailRejectUnauthorized']:
+                int_ereject.set(1);
+            else:
+                int_ereject.set(0);
+
             # PARSE CLIENTS
             lsvar_current_client.set('');
             ls_clients['menu'].delete(0, 'end');
 
             for x in data['clients']:
                 rc = requests.get('http://' + str_server.get() + '/clients/' + str(x), auth=(str_username.get(), str_password.get()));
-                
+
                 if rc.status_code == 200:
                     rcd = json.loads(rc.text);
                     if not rcd is None:
@@ -187,6 +213,44 @@ def delete_address():
     str_raddress.set("");
     lsvar_current_address.set("");
     retrieve_data();
+
+def check_empty_config():
+    if str_ehost.get() != "":
+        if str_eport.get() != "":
+            if str_euser.get() != "":
+                if str_epass.get() != "":
+                    return True;
+                else:
+                    return False;
+            else:
+                return False;
+        else:
+            return False;
+    else:
+        return False;
+
+def save_config():
+    if check_empty_config():
+
+        newdata = {
+            'mailhost': str_ehost.get(),
+            'mailport': str_eport.get(),
+            'mailuser': str_euser.get(),
+            'mailpass': str_epass.get()
+            }
+
+        if int_esecure.get() == 1:
+            newdata['securemail'] = True;
+        else:
+            newdata['securemail'] = False;
+
+        if int_ereject.get() == 1:
+            newdata['mailRejectUnauthorized'] = True;
+        else:
+            newdata['mailRejectUnauthorized'] = False;
+
+        r = requests.put('http://' + str_server.get() + '/config/0', auth=(str_username.get(), str_password.get()), json=newdata);
+        retrieve_data();
 
 def check_empty_client():
     if str_cname.get() != "":
@@ -338,9 +402,50 @@ button_deleteAddress = Button(address_page_f3, text="Delete", command=delete_add
 button_deleteAddress.grid(row=1,column=3);
 address_page_f3.grid(row=3,column=1,sticky=W);
 
+# SERVER PAGE
+server_page = Frame(mw, padx=2, pady=2);
+
+server_page_f1 = Frame(server_page, padx=4, pady=10);
+
+label_ehost = Label(server_page_f1, text="Email Host: ");
+input_ehost = Entry(server_page_f1, textvariable=str_ehost);
+label_ehost.grid(row=1,column=1,sticky=E);
+input_ehost.grid(row=1,column=2,sticky=W);
+
+label_eport = Label(server_page_f1, text="Port: ");
+input_eport = Entry(server_page_f1, textvariable=str_eport);
+label_eport.grid(row=2,column=1,sticky=E);
+input_eport.grid(row=2,column=2,sticky=W);
+
+label_esecure = Label(server_page_f1, text="Secure: ");
+input_esecure = Checkbutton(server_page_f1, variable=int_esecure);
+label_esecure.grid(row=3,column=1,sticky=E);
+input_esecure.grid(row=3,column=2,sticky=W);
+
+label_euser = Label(server_page_f1, text="User: ");
+input_euser = Entry(server_page_f1, textvariable=str_euser);
+label_euser.grid(row=4,column=1,sticky=E);
+input_euser.grid(row=4,column=2,sticky=W);
+
+label_epass = Label(server_page_f1, text="Pass: ");
+input_epass = Entry(server_page_f1, textvariable=str_epass, show="*");
+label_epass.grid(row=5,column=1,sticky=E);
+input_epass.grid(row=5,column=2,sticky=W);
+
+label_ereject = Label(server_page_f1, text="Ignore SSL: ");
+input_ereject = Checkbutton(server_page_f1, variable=int_ereject);
+label_ereject.grid(row=6,column=1,sticky=E);
+input_ereject.grid(row=6,column=2,sticky=W);
+
+button_saveConfig = Button(server_page_f1, text="Update", command=save_config);
+button_saveConfig.grid(row=7,column=2,sticky=E);
+
+server_page_f1.grid(row=2,column=1,sticky=W);
+
 #mw.add(config_page, text="Config");
 mw.add(client_page, text="Clients");
 mw.add(address_page, text="Recipients");
+mw.add(server_page, text="Configuration");
 
 mw.grid(row=1,column=1);
 config_page.grid(row=2,column=1,sticky=W);
