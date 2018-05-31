@@ -72,7 +72,7 @@ def retrieve_data():
 
             for x in data['clients']:
                 rc = requests.get('http://' + str_server.get() + '/clients/' + str(x), auth=(str_username.get(), str_password.get()));
-
+                
                 if rc.status_code == 200:
                     rcd = json.loads(rc.text);
                     if not rcd is None:
@@ -85,6 +85,7 @@ def retrieve_data():
             ls_addresses['menu'].delete(0, 'end');
 
             for x in data['recipients']:
+
                 rr = requests.get('http://' + str_server.get() + '/recipients/' + str(x), auth=(str_username.get(), str_password.get()));
 
                 if rr.status_code == 200:
