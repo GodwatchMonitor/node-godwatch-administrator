@@ -407,7 +407,7 @@ server_page = Frame(mw, padx=2, pady=2);
 
 server_page_f1 = Frame(server_page, padx=4, pady=10);
 
-label_ehost = Label(server_page_f1, text="Email Host: ");
+label_ehost = Label(server_page_f1, text="Host: ");
 input_ehost = Entry(server_page_f1, textvariable=str_ehost);
 label_ehost.grid(row=1,column=1,sticky=E);
 input_ehost.grid(row=1,column=2,sticky=W);
@@ -418,9 +418,19 @@ label_eport.grid(row=2,column=1,sticky=E);
 input_eport.grid(row=2,column=2,sticky=W);
 
 label_esecure = Label(server_page_f1, text="Secure: ");
-input_esecure = Checkbutton(server_page_f1, variable=int_esecure);
 label_esecure.grid(row=3,column=1,sticky=E);
-input_esecure.grid(row=3,column=2,sticky=W);
+
+server_bool_page = Frame(server_page_f1);
+
+input_esecure = Checkbutton(server_bool_page, variable=int_esecure);
+input_esecure.grid(row=1,column=2,sticky=W);
+
+label_ereject = Label(server_bool_page, text="Ignore SSL: ");
+input_ereject = Checkbutton(server_bool_page, variable=int_ereject);
+label_ereject.grid(row=1,column=3,sticky=E);
+input_ereject.grid(row=1,column=4,sticky=E);
+
+server_bool_page.grid(row=3,column=2);
 
 label_euser = Label(server_page_f1, text="User: ");
 input_euser = Entry(server_page_f1, textvariable=str_euser);
@@ -432,15 +442,14 @@ input_epass = Entry(server_page_f1, textvariable=str_epass, show="*");
 label_epass.grid(row=5,column=1,sticky=E);
 input_epass.grid(row=5,column=2,sticky=W);
 
-label_ereject = Label(server_page_f1, text="Ignore SSL: ");
-input_ereject = Checkbutton(server_page_f1, variable=int_ereject);
-label_ereject.grid(row=6,column=1,sticky=E);
-input_ereject.grid(row=6,column=2,sticky=W);
-
-button_saveConfig = Button(server_page_f1, text="Update", command=save_config);
-button_saveConfig.grid(row=7,column=2,sticky=E);
-
 server_page_f1.grid(row=2,column=1,sticky=W);
+
+server_page_f2 = Frame(server_page, padx=4, pady=11);
+
+button_saveConfig = Button(server_page_f2, text="Update", command=save_config);
+button_saveConfig.grid(row=1,column=1,sticky=W);
+
+server_page_f2.grid(row=3,column=1,sticky=W);
 
 #mw.add(config_page, text="Config");
 mw.add(client_page, text="Clients");
