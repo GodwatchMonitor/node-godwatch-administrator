@@ -4,7 +4,7 @@ from tkinter import ttk
 import requests, json
 
 root = Tk();
-root.title("node-Godwatch Administrator")
+root.title("Godwatch Administrator")
 root.geometry("300x300");
 root.resizable(0, 0);
 
@@ -88,9 +88,9 @@ def retrieve_data():
             str_euser.set(data['mailuser']);
             str_epass.set(data['mailpass']);
             if data['mailRejectUnauthorized']:
-                int_ereject.set(1);
-            else:
                 int_ereject.set(0);
+            else:
+                int_ereject.set(1);
 
             # PARSE CLIENTS
             lsvar_current_client.set('');
@@ -240,9 +240,9 @@ def save_config():
             }
 
         if int_esecure.get() == 1:
-            newdata['securemail'] = True;
-        else:
             newdata['securemail'] = False;
+        else:
+            newdata['securemail'] = True;
 
         if int_ereject.get() == 1:
             newdata['mailRejectUnauthorized'] = True;
