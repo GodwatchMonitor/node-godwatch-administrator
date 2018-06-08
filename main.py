@@ -240,14 +240,14 @@ def save_config():
             }
 
         if int_esecure.get() == 1:
-            newdata['securemail'] = False;
-        else:
             newdata['securemail'] = True;
+        else:
+            newdata['securemail'] = False;
 
         if int_ereject.get() == 1:
-            newdata['mailRejectUnauthorized'] = True;
-        else:
             newdata['mailRejectUnauthorized'] = False;
+        else:
+            newdata['mailRejectUnauthorized'] = True;
 
         r = requests.put('http://' + str_server.get() + '/config/0', auth=(str_username.get(), str_password.get()), json=newdata);
         retrieve_data();
