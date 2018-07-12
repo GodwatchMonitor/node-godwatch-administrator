@@ -69,11 +69,13 @@ def reset_stringvars():
 
 def retrieve_data():
 
-    reset_stringvars();
-
     if str_server.get() != "":
 
+        print("Server: " + str_server.get())
+
         r = requests.get('http://' + str_server.get() + '/config', auth=(str_username.get(), str_password.get()));
+
+        print(r.status_code);
 
         if r.status_code == 200:
 
@@ -121,6 +123,8 @@ def retrieve_data():
                         db_addresses[rrd['name']] = rrd;
                         lsvar_current_address.set(rrd['name']);
 
+            reset_stringvars();
+
 def load_settings():
     try:
         settings_file = open('settings.txt', 'r+');
@@ -155,7 +159,7 @@ def dropdown_change_client(*args):
         str_cname.set(data['name']);
         str_cipaddr.set(data['ipaddr']);
         str_cinterval.set(data['interval']);
-        str_chash.set(data['hash']);
+        #str_chash.set(data['hash']);
         str_cdatereported.set(data['datereported']);
         #if data['enabled']:
         #    int_cenabled.set(1);
@@ -254,11 +258,8 @@ def save_config():
 
 def check_empty_client():
     if str_cname.get() != "":
-        if str_chash.get() != "":
-            if str_cinterval.get() != "":
-                return True;
-            else:
-                return False;
+        if str_cinterval.get() != "":
+            return True;
         else:
             return False;
     else:

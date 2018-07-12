@@ -1,2 +1,4 @@
 /settings.txt
 /__pycache__
+/build
+/dist
